@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Killians School Solar-System </title>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #information {
+            position: absolute;
+            width: 400px;
+            height: 20px;
+            background-color: #EEE;
+            color: red;
+        }
+    </style>
+    
+    <!-- include script files -->
+    <script src="http://cdn.babylonjs.com/2-2/babylon.js"></script>
+    <script src="~/scripts/hand.js"></script>
+    <script src="~/scripts/cannon.js"></script>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script type="text/javascript">
+
+	"use strict";
+	document.addEventListener("DOMContentLoaded", run, false);
+
+	function run() {
+
+		if (BABYLON.Engine.isSupported()) {
+
+			// Get the canvas element from our HTML below
+			var canvas = document.getElementById("renderCanvas");
+
+			var engine = new BABYLON.Engine(canvas, true);
+
+			var DYNAMIC_ACTIVATE = true;
+
+            //planet size factor  
+			var DIAMETER_MERCURY = .25;
+			var DIAMETER_VENUS = .6203;
+			var DIAMETER_EARTH = .6537;
+			var DIAMETER_MARS = .3481;
+			var DIAMETER_JUPITER = 7.3186;
+			var DIAMETER_SATURN = 6.15;
+			var DIAMETER_URANUS = 2.6199;
+		    //var DIAMETER_NEPTUNE = 2.5383;
+			var DIAMETER_NEPTUNE = 6.5383;
+
+            //set the distance from the sun
+			var DISTANCE_SUN_MERCURY = 29.998;
+			var DISTANCE_SUN_VENUS = 35.122;
+		    //var DISTANCE_SUN_EARTH = 39;
+			var DISTANCE_SUN_EARTH = 46;
+		    //var DISTANCE_SUN_MARS = 46.336;
+			var DISTANCE_SUN_MARS = 66.336;
+			var DISTANCE_SUN_JUPITER = 97.842;
+			var DISTANCE_SUN_SATURN = 151.7;
+			var DISTANCE_SUN_URANUS = 200;//294.052;
+            //var DISTANCE_SUN_NEPTUNE = 446.54;
+			var DISTANCE_SUN_NEPTUNE = 294;//394.052;
+
+			var scene = new BABYLON.Scene(engine);
+			var assetsManager = new BABYLON.AssetsManager(scene);
+
+			 // This creates and positions a free camera
+			 var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(130, 45.5, -35.5), scene);
+
+
+			camera.setTarget(new BABYLON.Vector3.Zero());
+			camera.attachControl(canvas, false);
+
+            //Add music
+		    //var music = new BABYLON.Sound("StarWars", "sounds/star-wars-theme-song.mp3", scene,
+			var music = new BABYLON.Sound("StarWars", "star-wars-theme-song.mp3", scene,
+			function () {
+			    // Sound has been downloaded & decoded
+			    music.play();
+			    }
+	        );
+
+
+			var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+			light.intensity = 1;
+
+
+     
+			 // Let's try our built-in 'sphere' shape. Params: name, subdivisions, size, scene
+			 var SUN = BABYLON.Mesh.CreateSphere("SUN", 120, 25, scene);
+
+			 //MERCURY
+			 var MERCURY = BABYLON.Mesh.CreateSphere("MERCURY", 32, 5*DIAMETER_MERCURY, scene);
+			 MERCURY.position.x = DISTANCE_SUN_MERCURY;
+
+			 //Venus
+			 var venus = BABYLON.Mesh.CreateSphere("venus", 32, 5*DIAMETER_VENUS, scene);
+			 venus.position.x = DISTANCE_SUN_VENUS;
+
+			 //EARTH
+			 var EARTH = BABYLON.Mesh.CreateSphere("EARTH", 32, 5*DIAMETER_EARTH, scene);
+			 EARTH.position.x = DISTANCE_SUN_EARTH;
+
+			 //Mars
+			 var mars = BABYLON.Mesh.CreateSphere("mars", 32, 5 * DIAMETER_MARS, scene);
+			 mars.position.x = DISTANCE_SUN_MARS;
+
+			 //Jupiter
+			 var jupiter = BABYLON.Mesh.CreateSphere("jupiter", 32, DIAMETER_JUPITER, scene);
+			 jupiter.position.x = DISTANCE_SUN_JUPITER;
+
+			 //SATURN
+			 var SATURN = BABYLON.Mesh.CreateSphere("SATURN", 32, DIAMETER_SATURN, scene);
+            //Add the rings on Saturn
+			 var anneauxSATURN = BABYLON.Mesh.CreateTorus("anneauxSATURN", DIAMETER_SATURN + 2, 1.5, 64, scene, false);
+			 anneauxSATURN.scaling = new BABYLON.Vector3(1, 0.001, 1);
+
+			 SATURN.position.x = DISTANCE_SUN_SATURN;
+			 anneauxSATURN.position.x = DISTANCE_SUN_SATURN;
+
+			 //Uranus
+			 var uranus = BABYLON.Mesh.CreateSphere("uranus", 32, DIAMETER_URANUS, scene);
+			 uranus.position.x = DISTANCE_SUN_URANUS;
+		    //Add the rings on Saturn
+			 var anneauxUranus = BABYLON.Mesh.CreateTorus("anneauxURANUS", DIAMETER_URANUS + 2, 1.5, 64, scene, false);
+			 anneauxUranus.scaling = new BABYLON.Vector3(1, 0.001, 1);
+         	 anneauxUranus.position.x = DISTANCE_SUN_URANUS;
+
+			 //Neptune
+			 var neptune = BABYLON.Mesh.CreateSphere("neptune", 32, DIAMETER_NEPTUNE, scene);
+			 neptune.position.x = DISTANCE_SUN_NEPTUNE;
+
+			//Creation of a material with wireFrame
+			var materialWireFrame = new BABYLON.StandardMaterial("wireFrame", scene);
+			materialWireFrame.wireframe = true;
+
+			/////////////////////////////
+			//Add textures colours
+		    /////////////////////////////
+			
+			var textureStars = new BABYLON.CubeTexture("textures/starsIII", scene);
+
+		    //var textureSUNTask = assetsManager.addTextureTask("textureSUN", "textures/texture_sun.jpg");
+			var textureSUNTask = assetsManager.addTextureTask("textureSUN", "../textures/texture_sun.jpg");
+			textureSUNTask.onSuccess = function(task) {
+				var materialSun = new BABYLON.StandardMaterial("texture_SUN", scene);
+				materialSun.diffuseTexture = task.texture;
+				materialSun.diffuseTexture.uScale = 1.0;
+				materialSun.diffuseTexture.vScale = 1.0;
+				SUN.material = materialSun;
+			}
+
+			//TODO : faire le reste...
+
+			var textureMERCURYTask = assetsManager.addTextureTask("textureMERCURY", "textures/texture_mercury.jpg");
+			textureMERCURYTask.onSuccess = function(task) {
+				var materialMERCURY = new BABYLON.StandardMaterial("texture_MERCURY", scene);
+				materialMERCURY.diffuseTexture = task.texture;
+				materialMERCURY.diffuseTexture.uScale = 1.0;
+				materialMERCURY.diffuseTexture.vScale = 1.0;
+				MERCURY.material = materialMERCURY;
+			}
+
+
+			var textureVenusTask = assetsManager.addTextureTask("textureVenus", "textures/texture_venus.jpg");
+			textureVenusTask.onSuccess = function(task) {
+				var materialVenus = new BABYLON.StandardMaterial("texture_venus", scene);
+				materialVenus.diffuseTexture = task.texture;
+				materialVenus.diffuseTexture.uScale = 1.0;
+				materialVenus.diffuseTexture.vScale = 1.0;
+				venus.material = materialVenus;
+			}
+
+			var textureEARTHTask = assetsManager.addTextureTask("textureEARTH", "textures/texture_earth.jpg");
+			textureEARTHTask.onSuccess = function(task) {
+				var materialEARTH = new BABYLON.StandardMaterial("texture_EARTH", scene);
+				materialEARTH.diffuseTexture = task.texture;
+				materialEARTH.diffuseTexture.uScale = 1.0;
+				materialEARTH.diffuseTexture.vScale = 1.0;
+				EARTH.material = materialEARTH;
+			}
+
+			engine.loadingUIText = "Test 2"
+
+			var textureMarsTask = assetsManager.addTextureTask("textureMars", "textures/texture_mars.jpg");
+			textureMarsTask.onSuccess = function(task) {
+				var materialMars = new BABYLON.StandardMaterial("texture_mars", scene);
+				materialMars.diffuseTexture = task.texture;
+				materialMars.diffuseTexture.uScale = 1.0;
+				materialMars.diffuseTexture.vScale = 1.0;
+				mars.material = materialMars;
+			}
+
+			var textureJupiterTask = assetsManager.addTextureTask("textureJupiter", "textures/texture_jupiter.jpg");
+			textureJupiterTask.onSuccess = function(task) {
+				var materialJupîter = new BABYLON.StandardMaterial("texture_jupiter", scene);
+				materialJupîter.diffuseTexture = task.texture;
+				materialJupîter.diffuseTexture.uScale = 1.0;
+				materialJupîter.diffuseTexture.vScale = 1.0;
+				jupiter.material = materialJupîter;
+			}
+
+			engine.loadingUIText = "Test 1"
+
+			var textureSATURNTask = assetsManager.addTextureTask("textureSATURN", "textures/texture_saturn.jpg");
+			textureSATURNTask.onSuccess = function(task) {
+				var materialSATURN = new BABYLON.StandardMaterial("texture_SATURN", scene);
+				materialSATURN.diffuseTexture = task.texture;
+				materialSATURN.diffuseTexture.uScale = 1.0;
+				materialSATURN.diffuseTexture.vScale = 1.0;
+				SATURN.material = materialSATURN;
+			}
+
+
+			
+			//Uranus
+			var textureUranusTask = assetsManager.addTextureTask("textureUranus", "textures/texture_uranus.jpg");
+			textureUranusTask.onSuccess = function(task) {
+				var materialUranus = new BABYLON.StandardMaterial("texture_uranus", scene);
+				materialUranus.diffuseTexture = task.texture;
+				materialUranus.diffuseTexture.uScale = 1.0;
+				materialUranus.diffuseTexture.vScale = 1.0;
+				uranus.material = materialUranus;
+			}
+
+			//Neptune
+			var textureNeptuneTask = assetsManager.addTextureTask("textureNeptune", "textures/texture_uranus.jpg");
+			textureNeptuneTask.onSuccess = function (task) {
+			    var materialNeptune = new BABYLON.StandardMaterial("texture_neptune", scene);
+			    materialNeptune.diffuseTexture = task.texture;
+			    materialNeptune.diffuseTexture.uScale = 1.0;
+			    materialNeptune.diffuseTexture.vScale = 1.0;
+			    neptune.material = materialNeptune;
+			}
+
+
+			var skybox = BABYLON.Mesh.CreateSphere("skyBox", 32, 800, scene);
+			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+			skyboxMaterial.backFaceCulling = false;
+			skyboxMaterial.reflectionTexture = textureStars;
+			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.PLANAR_MODE;
+			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			skybox.material = skyboxMaterial;
+
+
+			// Animations
+			var alphaMERCURY = 0;
+			var alphaVenus = 0;
+			var alphaEARTH = 0;
+			var alphaMars = 0;
+			var alphaJupiter = 0;
+			var alphaSATURN = 0;
+			var alphaUranus = 0;
+			var alphaNeptune = 0;
+
+			var COEFF_DUPLI_SPEED = .1;
+			var SPEED_MERCURY = .255;
+			var SPEED_VENUS = .202;
+			var SPEED_EARTH = .172;
+			var SPEED_MARS = .139;
+			var SPEED_JUPITER = 0.075;
+			var SPEED_SATURN = .053;
+			var SPEED_URANUS = .031//.039;
+			var SPEED_NEPTUNE = .031;
+
+			scene.beforeRender = function () {
+
+			    if(DYNAMIC_ACTIVATE)
+			    {
+			    	MERCURY.position = new BABYLON.Vector3(DISTANCE_SUN_MERCURY * Math.sin(alphaEARTH), 0, DISTANCE_SUN_MERCURY * Math.cos(alphaEARTH));
+			    	venus.position = new BABYLON.Vector3(DISTANCE_SUN_VENUS * Math.sin(alphaMars), 0, DISTANCE_SUN_VENUS * Math.cos(alphaMars));
+			    	EARTH.position = new BABYLON.Vector3(DISTANCE_SUN_EARTH * Math.sin(alphaEARTH), 0, DISTANCE_SUN_EARTH * Math.cos(alphaEARTH));
+			    	mars.position = new BABYLON.Vector3(DISTANCE_SUN_MARS * Math.sin(alphaMars), 0, DISTANCE_SUN_MARS * Math.cos(alphaMars));
+			    	jupiter.position = new BABYLON.Vector3(DISTANCE_SUN_JUPITER * Math.sin(alphaJupiter), 0, DISTANCE_SUN_JUPITER * Math.cos(alphaJupiter));
+			    	SATURN.position = new BABYLON.Vector3(DISTANCE_SUN_SATURN * Math.sin(alphaJupiter), 0, DISTANCE_SUN_SATURN * Math.cos(alphaJupiter));
+			    	anneauxSATURN.position = new BABYLON.Vector3(DISTANCE_SUN_SATURN * Math.sin(alphaJupiter), 0, DISTANCE_SUN_SATURN * Math.cos(alphaJupiter));
+			    	uranus.position = new BABYLON.Vector3(DISTANCE_SUN_URANUS * Math.sin(alphaEARTH), 0, DISTANCE_SUN_URANUS * Math.cos(alphaEARTH));
+			    	anneauxUranus.position = new BABYLON.Vector3(DISTANCE_SUN_URANUS * Math.sin(alphaEARTH), 0, DISTANCE_SUN_URANUS * Math.cos(alphaEARTH));
+			    	neptune.position = new BABYLON.Vector3(DISTANCE_SUN_NEPTUNE * Math.sin(alphaMars), 0, DISTANCE_SUN_NEPTUNE * Math.cos(alphaMars));
+
+
+			    	alphaMERCURY += COEFF_DUPLI_SPEED * SPEED_MERCURY;
+			    	alphaVenus += COEFF_DUPLI_SPEED * SPEED_VENUS;
+			    	alphaEARTH += COEFF_DUPLI_SPEED * SPEED_EARTH;
+			    	alphaMars += COEFF_DUPLI_SPEED * SPEED_MARS;
+			    	alphaJupiter += COEFF_DUPLI_SPEED * SPEED_JUPITER;
+			    	alphaSATURN += COEFF_DUPLI_SPEED * SPEED_SATURN;
+			    	alphaUranus += COEFF_DUPLI_SPEED * SPEED_URANUS;
+			    	alphaNeptune += COEFF_DUPLI_SPEED * SPEED_NEPTUNE;
+			    }
+
+                //planet rotation on it's own axis
+			    SUN.rotate(new BABYLON.Vector3(0, 1, 0) , 0.001, BABYLON.Space.LOCAL);
+			    	MERCURY.rotate(new BABYLON.Vector3(0, 1, 0) , 0.009, BABYLON.Space.LOCAL);
+			    	venus.rotate(new BABYLON.Vector3(0, 1, 0) , -0.001, BABYLON.Space.LOCAL);
+			    	EARTH.rotate(new BABYLON.Vector3(0, 1, 0) , -0.03, BABYLON.Space.LOCAL);
+			    	mars.rotate(new BABYLON.Vector3(0, 1, 0) , 0.025, BABYLON.Space.LOCAL);
+			    	jupiter.rotate(new BABYLON.Vector3(0, 1, 0) , 0.3, BABYLON.Space.LOCAL);
+			    	SATURN.rotate(new BABYLON.Vector3(0, 1, 0) , 0.25, BABYLON.Space.LOCAL);
+			    	anneauxSATURN.rotate(new BABYLON.Vector3(0, 1, 0) , 0.25, BABYLON.Space.LOCAL);
+			    	uranus.rotate(new BABYLON.Vector3(0, 1, 0) , -0.2, BABYLON.Space.LOCAL);
+			    	anneauxSATURN.rotate(new BABYLON.Vector3(0, 1, 0) , 0.25, BABYLON.Space.LOCAL);
+			    	neptune.rotate(new BABYLON.Vector3(0, 1, 0) , 0.35, BABYLON.Space.LOCAL);
+
+			  };
+
+
+
+			assetsManager.onFinish = function (tasks) {
+				while(!textureStars.isReady())
+					setTimeout(function() { }, 50);
+
+				engine.runRenderLoop(function () {
+					scene.render();
+				});
+
+			};
+
+			// Watch for browser/canvas resize events
+			window.addEventListener("resize", function () {
+			 engine.resize();
+			});
+
+			assetsManager.load();
+		}
+	}
+
+
+    </script>
+</body>
+
+</html>
